@@ -1,84 +1,179 @@
-# ⏱️ Windows Shutdown Timer
+# Windows Shutdown Timer ⏱️
 
-Simple, standalone Windows shutdown timer implemented as a single batch file. Provides quick presets (30 minutes, 1 / 2 / 3 hours), a custom hours+minutes timer, an active countdown with exact shutdown clock time, a cancel option, automatic closing of background apps before shutdown, and automatic elevation to Administrator when needed. No extra files or dependencies required.
+A simple, lightweight Windows batch script for quick and convenient power management. Set up automatic shutdown with preset options or custom time without requiring administrator rights.
 
 ## Features
-- Presets: 30 minutes, 1 hour, 2 hours, 3 hours.
-- Custom timer: set hours + minutes (0–23 hours, 0–59 minutes).
-- Active countdown display with zero-padded time and the exact clock time when shutdown will occur.
-- Cancel scheduled shutdown via menu or `shutdown /a`.
-- Automatically closes most background apps (configurable safelist) before shutting down.
-- Self-elevates (UAC) to Admin if required.
-- Centers the console window on screen for a tidy UI.
-- Standalone: single `ShutDown_Timer.bat` file.
+
+✅ **Preset Timers**: Quick shutdown options for 30 minutes, 1 hour, 2 hours, or 3 hours  
+✅ **Custom Time**: Set any custom duration with hours and minutes  
+✅ **Live Countdown Display**: Real-time timer showing remaining time and exact shutdown clock time  
+✅ **Cancel Anytime**: Cancel scheduled shutdown at any point  
+✅ **Survives Window Close**: Shutdown is scheduled with Windows directly, so it happens even if you close the script  
+✅ **No Admin Required**: Runs as normal user without administrator rights  
+✅ **No Dependencies**: Works standalone without extra files or installations  
+✅ **Clean UI**: Centered console window with light-red theme for easy visibility  
+✅ **User-Friendly**: Back button in custom menu, clear navigation options  
+✅ **Non-Destructive**: Doesn't force-close any applications, giving you time to save work
 
 ## Requirements
-- Windows (tested on modern Windows 10/11).
-- Administrative privileges are required to issue a system shutdown; the script will request elevation automatically.
+
+- Windows 7 or later
+- PowerShell (usually pre-installed on Windows)
+- No administrator rights needed
+- No additional software or dependencies
 
 ## Installation
-1. Download `ShutDown_Timer.bat` from this repository.
-2. Place it anywhere on your PC (e.g., Desktop or Downloads).
+
+1. **Download** the `Windows_Shutdown_Timer_v_0.1.bat` file
+2. **Save** it to your desired location (Desktop, Documents, etc.)
+3. **Run** the batch file by double-clicking it
+4. That's it! No installation needed.
 
 ## Usage
-- Double‑click `ShutDown_Timer.bat` from Explorer, or run it from a console:
-  - PowerShell: `.\ShutDown_Timer.bat`
-  - Command Prompt: `ShutDown_Timer.bat`
 
-When launched the script will:
-- Request UAC elevation if not already running as Administrator.
-- Open a console menu with preset and custom timer options.
-- Show an active countdown and scheduled shutdown clock time.
-- Allow cancellation at any time by pressing `C` during the countdown, or selecting "Cancel Any Scheduled Shutdown" from the main menu.
+### Quick Start
 
-Quick operation:
-- Start a timer using menu choices 1–5.
-- To cancel a pending OS shutdown from anywhere, run:
-  ```
-  shutdown /a
-  ```
-  (The script also provides a menu option to cancel.)
+1. Run the batch file
+2. Select an option from the menu:
+   - **Option 1-4**: Preset timers (30 min, 1h, 2h, 3h)
+   - **Option 5**: Custom time entry
+   - **Option 6**: Cancel any scheduled shutdown
+   - **Option 7**: Exit
 
-## Custom Time Notes
-- Choose option 5 in the menu to set a custom timer (hours + minutes).
-- You can type `B` during the custom prompts to go back to the main menu.
-- Hours must be 0–23, minutes 0–59; the script strips leading zeros and validates ranges.
+3. Confirm your selection
+4. Watch the countdown timer display
 
-## Customization
-- Open `ShutDown_Timer.bat` in a text editor to tweak behavior.
-  - `safelist` — a comma-separated list of process names that the script will NOT forcibly close before shutdown (defaults include system-critical processes). Edit carefully.
-  - Console appearance — the script sets `mode con:` (cols & lines) and `color` at the top; adjust as desired.
-  - Presets — the preset durations are defined in the main menu branch; you can change the seconds values for presets if you want different defaults.
+### Custom Time Entry
 
-## How it works (brief)
-- Admin check: runs `net session` and, if not elevated, re-launches itself via PowerShell `Start-Process -Verb RunAs`.
-- Shutdown scheduling: internal countdown loop using `choice` and `timeout` to wake periodically and update display.
-- Exact shutdown clock time is calculated via PowerShell: `[datetime]::Now.AddSeconds(...)`.
-- Closes background apps using `tasklist` and `taskkill`, protected by a safelist to avoid killing system-critical processes.
-- Final shutdown: `shutdown /s /t 5 /f` with a short delay and a comment.
+When selecting option 5:
+1. Enter hours (0-23)
+2. Enter minutes (0-59)
+3. Type `B` at any prompt to return to main menu
+4. Confirm your custom timer
 
-## Safety & Warnings
-- The script force-closes background processes (`taskkill /f`) except those listed in `safelist`. Save work before starting a timer.
-- Be cautious editing the safelist — removing critical processes may cause system instability.
-- Administrative privileges are required to perform a system shutdown.
+### Canceling a Shutdown
+
+**While countdown is showing:**
+- Press `C` to cancel and return to menu
+
+**Without running the script:**
+1. Run the script again
+2. Select option 6 (Cancel Any Scheduled Shutdown)
+3. The scheduled shutdown will be cancelled
+
+## How It Works
+
+1. When you confirm a timer, the script schedules the shutdown directly with Windows using the `shutdown` command
+2. This means the shutdown is now managed by Windows, not just the batch script
+3. The countdown display shows real-time information and exact shutdown time
+4. You can close the window, but the shutdown will still happen as scheduled with Windows
+5. To cancel, use option 6 or press `C` during countdown
+
+## Screenshots
+
+The script displays a clean menu interface with:
+- Centered window on your screen
+- Light red theme for easy visibility
+- Clear status information during countdown
+- Exact shutdown time display
+
+## Menu Structure
+
+```
+[1] Shutdown in 30 Minutes
+[2] Shutdown in 1 Hour
+[3] Shutdown in 2 Hours
+[4] Shutdown in 3 Hours
+[5] Custom Time (Set Hours + Minutes)
+[6] Cancel Any Scheduled Shutdown
+[7] Exit
+```
+
+## Keyboard Shortcuts
+
+- **1-7**: Navigate menu
+- **Y/N**: Confirm or cancel timer setup
+- **B**: Back to main menu (in custom time entry)
+- **C**: Cancel scheduled shutdown (during countdown)
 
 ## Troubleshooting
-- UAC prompt not shown / no elevation: try right-click → Run as administrator.
-- Shutdown not happening: check for pending `shutdown /a` or if another process cancelled the shutdown.
-- To abort a scheduled shutdown manually: run `shutdown /a` in an elevated command prompt.
-- If the script fails to center the window or the centering step errors, it's non-fatal — the timer will still run.
+
+### "Could not schedule the shutdown" Error
+
+**Possible causes:**
+- Your PC is managed by a work/school policy that restricts shutdown rights
+- Lack of permissions in your user account
+
+**Solution:**
+- Try running the script as Administrator
+- Contact your system administrator for policy changes
+
+### Script won't open
+
+- Right-click the `.bat` file and select "Run as Administrator"
+- Check if batch files are blocked by your security software
+- Try disabling antivirus temporarily
+
+### Timer doesn't work
+
+- Ensure Windows updates are current
+- PowerShell must be enabled and available
+- Restart your computer and try again
+
+## System Requirements
+
+| Requirement | Details |
+|---|---|
+| **OS** | Windows 7 or later |
+| **Architecture** | 32-bit or 64-bit |
+| **Permissions** | Normal user rights (no admin required for normal operation) |
+| **Dependencies** | PowerShell (pre-installed on Windows) |
+
+## Important Notes
+
+⚠️ **Once you confirm a timer, the shutdown is scheduled directly with Windows.** It will still happen even if you close this window.
+
+🔔 **To cancel a shutdown:**
+- Option 1: Run the script again and select option 6
+- Option 2: Press `C` while the countdown window is open
+
+📌 **Best Practice:** Save all your work before confirming a timer.
+
+## Tested On
+
+- Windows 7
+- Windows 10
+- Windows 11
 
 ## Contributing
-- This project is a single-file utility. If you'd like improvements (e.g., additional presets, safer app-closing logic, or localization), open an issue or submit a PR with your proposed changes.
-- When editing, keep the script standalone and avoid adding external dependencies.
+
+Have an idea for improvement? Found a bug? 
+
+Feel free to:
+- Open an issue on GitHub
+- Submit a pull request
+- Join our community on Discord
+
+## Version History
+
+**v0.1** - Initial release
+- Preset shutdown timers
+- Custom time configuration
+- Live countdown display
+- Cancel functionality
+- Clean UI with centered window
 
 ## License
+
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
+
+This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## Support
 
-For support, 
-[![Discord](https://img.shields.io/badge/Discord-%237289DA.svg?logo=discord&logoColor=white)](https://discord.gg/bb2k3w5Q5A) join our Discord Server.
+For support, join our community:
+
+[![Discord](https://img.shields.io/badge/Discord-%237289DA.svg?logo=discord&logoColor=white)](https://discord.gg/bb2k3w5Q5A)
 
 ## Author
 
