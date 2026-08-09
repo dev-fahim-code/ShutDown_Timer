@@ -10,27 +10,22 @@ title Windows Shutdown Timer - Dev-Fahim-Code
 ::   Features: 30 min / 1h / 2h / 3h presets, custom timer
 ::   (hours + minutes), back option in custom menu, active
 ::   timer display with exact shutdown clock time, cancel
-::   option, auto-closes background apps right before
-::   shutdown, self-elevates to Admin, centers itself on
-::   screen with a light-red theme. Works standalone, no
-::   extra files needed.
+::   option, centers itself on screen with a light-red theme.
+::   Runs as a normal user (no admin rights required) and does
+::   NOT force-close any other applications. Works standalone,
+::   no extra files needed.
+::
+::   IMPORTANT: as soon as you confirm a timer, the shutdown is
+::   scheduled directly with Windows (shutdown /t). It will still
+::   happen even if you close this window. To cancel, run this
+::   script again and choose option 6 (or press C while this
+::   window is still open and the countdown is showing).
 :: ============================================================
-
-:: ---------- Require Administrator rights ----------
-net session >nul 2>&1
-if %errorlevel% neq 0 (
-    echo Requesting administrator privileges, please approve the UAC prompt...
-    powershell -NoProfile -Command "Start-Process -FilePath '%~f0' -Verb RunAs" >nul 2>&1
-    exit /b
-)
 
 :: ---------- Console look ----------
 mode con: cols=100 lines=38 >nul 2>&1
 color 0C
 call :CenterWindow
-
-:: ---------- Processes that must never be closed (edit if you like) ----------
-set "safelist= explorer.exe csrss.exe wininit.exe winlogon.exe services.exe lsass.exe smss.exe svchost.exe dwm.exe system registry taskhostw.exe runtimebroker.exe searchindexer.exe searchhost.exe startmenuexperiencehost.exe shellexperiencehost.exe sihost.exe fontdrvhost.exe dllhost.exe conhost.exe cmd.exe powershell.exe powershell_ise.exe taskkill.exe tasklist.exe wmic.exe cscript.exe wscript.exe wmiprvse.exe spoolsv.exe securityhealthservice.exe msmpeng.exe nissrv.exe audiodg.exe ctfmon.exe logonui.exe consent.exe "
 
 goto MainMenu
 
@@ -51,13 +46,13 @@ echo.
 set "menuChoice="
 set /p "menuChoice=  Select an option (1-7): "
 
-if "%menuChoice%"=="1" (set "totalSeconds=1800"  & set "timeLabel=30 Minutes"  & goto ConfirmStart)
-if "%menuChoice%"=="2" (set "totalSeconds=3600"  & set "timeLabel=1 Hour"      & goto ConfirmStart)
-if "%menuChoice%"=="3" (set "totalSeconds=7200"  & set "timeLabel=2 Hours"     & goto ConfirmStart)
-if "%menuChoice%"=="4" (set "totalSeconds=10800" & set "timeLabel=3 Hours"     & goto ConfirmStart)
-if "%menuChoice%"=="5" goto CustomTime
-if "%menuChoice%"=="6" goto CancelShutdown
-if "%menuChoice%"=="7" goto ExitScript
+if "!menuChoice!"=="1" (set "totalSeconds=1800"  & set "timeLabel=30 Minutes"  & goto ConfirmStart)
+if "!menuChoice!"=="2" (set "totalSeconds=3600"  & set "timeLabel=1 Hour"      & goto ConfirmStart)
+if "!menuChoice!"=="3" (set "totalSeconds=7200"  & set "timeLabel=2 Hours"     & goto ConfirmStart)
+if "!menuChoice!"=="4" (set "totalSeconds=10800" & set "timeLabel=3 Hours"     & goto ConfirmStart)
+if "!menuChoice!"=="5" goto CustomTime
+if "!menuChoice!"=="6" goto CancelShutdown
+if "!menuChoice!"=="7" goto ExitScript
 
 echo.
 echo   Invalid option, please try again.
@@ -65,7 +60,7 @@ timeout /t 2 >nul
 goto MainMenu
 
 :: ============================================================
-::   CUSTOM TIME  (MODIFIED: B to go back, hours + minutes)
+::   CUSTOM TIME  (B to go back, hours + minutes)
 :: ============================================================
 :CustomTime
 cls
@@ -79,14 +74,14 @@ echo.
 
 set "custH="
 set /p "custH=  Hours   (0-23)   [B = Back to Menu]: "
-if /i "%custH%"=="B" goto MainMenu
+if /i "!custH!"=="B" goto MainMenu
 
 set "custM="
 set /p "custM=  Minutes (0-59)   [B = Back to Menu]: "
-if /i "%custM%"=="B" goto MainMenu
+if /i "!custM!"=="B" goto MainMenu
 
 :: --- Validate hours ---
-echo %custH%| findstr /r "^[0-9][0-9]*$" >nul
+echo(!custH!| findstr /r "^[0-9][0-9]*$" >nul
 if errorlevel 1 (
     echo.
     echo   Hours must be a number between 0 and 23. Please try again.
@@ -95,7 +90,7 @@ if errorlevel 1 (
 )
 
 :: --- Validate minutes ---
-echo %custM%| findstr /r "^[0-9][0-9]*$" >nul
+echo(!custM!| findstr /r "^[0-9][0-9]*$" >nul
 if errorlevel 1 (
     echo.
     echo   Minutes must be a number between 0 and 59. Please try again.
@@ -148,9 +143,10 @@ cls
 call :Banner
 echo   Selected duration : %timeLabel%
 echo.
-echo   The PC will shut down when the timer ends. Background
-echo   applications will be closed automatically right before
-echo   shutdown for a clean, hang-free power off.
+echo   Shutdown will be scheduled with Windows the moment you
+echo   confirm. It will still happen even if you close this
+echo   window - to cancel, run this script again and pick
+echo   option 6, or press C while the countdown is showing.
 echo.
 echo   Save your work now if anything is open and unsaved.
 echo.
@@ -159,10 +155,26 @@ if errorlevel 2 goto MainMenu
 goto StartCountdown
 
 :: ============================================================
-::   COUNTDOWN  (MODIFIED: shows active timer + shutdown time)
+::   COUNTDOWN  (shows active timer + exact shutdown clock time)
 :: ============================================================
 :StartCountdown
 set /a remaining=totalSeconds
+
+:: --- Schedule the shutdown with Windows itself right now. This is what
+::     makes the timer survive closing this window - Windows owns the
+::     countdown from this point on, not the batch script. ---
+shutdown /s /t %totalSeconds% /f /c "Shutdown scheduled by Dev-Fahim-Code Shutdown Timer."
+if errorlevel 1 (
+    cls
+    call :Banner
+    echo   Could not schedule the shutdown. If this PC is managed by
+    echo   a work or school policy that restricts shutdown rights,
+    echo   try running this script as Administrator, or contact your
+    echo   system administrator.
+    echo.
+    pause
+    goto MainMenu
+)
 
 :: --- Calculate the exact clock time when shutdown will occur ---
 powershell -NoProfile -Command "[datetime]::Now.AddSeconds(%totalSeconds%).ToString('hh:mm tt')" > "%temp%\dfc_stime.tmp" 2>nul
@@ -173,7 +185,7 @@ if exist "%temp%\dfc_stime.tmp" (
 )
 
 :CountdownLoop
-if %remaining% leq 0 goto DoShutdown
+if %remaining% leq 0 goto CountdownFinished
 cls
 call :Banner
 
@@ -192,31 +204,43 @@ echo   ========================================================
 echo.
 echo    Time Remaining    :  %hh%h  %mm%m  %ss%s
 echo.
-echo    Press [C] at any time to cancel and return to menu.
+echo    Shutdown is already scheduled with Windows - it will still
+echo    happen even if you close this window.
+echo.
+echo    Press [C] to CANCEL the scheduled shutdown and return to
+echo    the menu.
 echo   ========================================================
 echo.
 
 if %remaining% gtr 60 (set "waitStep=30") else (set "waitStep=1")
 choice /c CX /n /t %waitStep% /d X >nul
 if errorlevel 2 goto StepDone
-goto MainMenu
+goto CancelFromCountdown
 
 :StepDone
 if %waitStep% gtr %remaining% (set /a remaining=0) else (set /a remaining-=waitStep)
 goto CountdownLoop
 
-:: ============================================================
-::   SHUTDOWN
-:: ============================================================
-:DoShutdown
+:CancelFromCountdown
+shutdown /a >nul 2>&1
 cls
 call :Banner
-echo   Time is up. Preparing to shut down...
+echo   The scheduled shutdown has been cancelled.
 echo.
-call :CloseBackgroundApps
+pause
+goto MainMenu
+
+:: ============================================================
+::   COUNTDOWN DISPLAY FINISHED
+:: ============================================================
+:CountdownFinished
+cls
+call :Banner
+echo   Countdown finished. The shutdown that was scheduled with
+echo   Windows when you confirmed the timer should occur any
+echo   moment now.
 echo.
-echo   Shutting down now.
-shutdown /s /t 5 /f /c "Shutdown scheduled by Dev-Fahim-Code Shutdown Timer."
+timeout /t 5 >nul
 goto ExitScript
 
 :: ============================================================
@@ -226,7 +250,11 @@ goto ExitScript
 cls
 call :Banner
 shutdown /a >nul 2>&1
-echo   Any pending shutdown has been cancelled.
+if errorlevel 1 (
+    echo   No shutdown was currently scheduled ^(or it could not be cancelled^).
+) else (
+    echo   Any pending shutdown has been cancelled.
+)
 echo.
 pause
 goto MainMenu
@@ -258,16 +286,6 @@ echo     Developed by : Dev-Fahim-Code
 echo     GitHub       : https://github.com/dev-fahim-code
 echo   ====================================================
 echo.
-goto :eof
-
-:CloseBackgroundApps
-echo   Closing background applications for a clean shutdown...
-for /f "tokens=1 delims=," %%P in ('tasklist /fo csv /nh 2^>nul') do (
-    set "proc=%%~P"
-    echo %safelist%| find /i " !proc! " >nul
-    if errorlevel 1 taskkill /f /im "!proc!" >nul 2>&1
-)
-echo   Background applications closed.
 goto :eof
 
 :CenterWindow
