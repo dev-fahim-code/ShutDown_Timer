@@ -1,180 +1,122 @@
-# Windows Shutdown Timer ⏱️
+# ⏱️ Windows Shutdown Timer PRO
 
-A simple, lightweight Windows batch script for quick and convenient power management. Set up automatic shutdown with preset options or custom time without requiring administrator rights.
+![Version](https://img.shields.io/badge/version-2.1-red) ![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-blue) ![Type](https://img.shields.io/badge/type-Batch-lightgrey)
 
-## Features
+A single-file Windows batch script for scheduling **shutdown, restart, sleep, hibernate, lock or log off**, with a live countdown, popup warnings and a clean light-red console UI.
 
-✅ **Preset Timers**: Quick shutdown options for 30 minutes, 1 hour, 2 hours, or 3 hours  
-✅ **Custom Time**: Set any custom duration with hours and minutes  
-✅ **Live Countdown Display**: Real-time timer showing remaining time and exact shutdown clock time  
-✅ **Cancel Anytime**: Cancel scheduled shutdown at any point  
-✅ **Survives Window Close**: Shutdown is scheduled with Windows directly, so it happens even if you close the script  
-✅ **No Admin Required**: Runs as normal user without administrator rights  
-✅ **No Dependencies**: Works standalone without extra files or installations  
-✅ **Clean UI**: Centered console window with light-red theme for easy visibility  
-✅ **User-Friendly**: Back button in custom menu, clear navigation options  
-✅ **Non-Destructive**: Doesn't force-close any applications, giving you time to save work
+No installation. No admin rights. One `.bat` file.
 
-## Requirements
+---
 
-- Windows 7 or later
-- PowerShell (usually pre-installed on Windows)
-- No administrator rights needed
-- No additional software or dependencies
+## ✨ Features
 
-## Installation
+- **6 actions:** shutdown, restart, sleep, hibernate, lock screen, log off
+- **Quick presets:** 30 min, 1 h, 2 h, 3 h
+- **Flexible custom time:** `90`, `1h30m`, `2:15`, `45m`, `30s` (up to 168 hours)
+- **Clock-time mode:** `11:30pm`, `23:30`, `7am`
+- **Extend a running timer:** +15 / +30 / +60 min or a custom amount, without restarting it
+- **Warning popups:** a Windows notification 5 minutes and 1 minute before the action
+- **Accurate countdown:** based on the real clock, so it does not drift and stays correct after sleep
+- **Progress bar** and the exact time the action will run
+- **Remembers an active timer:** reopen the script and it shows what is running
+- **Repeat last custom time** with one key
+- **Themes:** red (default), green, blue, aqua, yellow, classic
+- **Default action:** choose what the timer does when you open it or run it from the command line
+- **Skip the confirmation screen** if you prefer one-key timers
+- **Reset to defaults** from the Settings menu
+- **Command-line mode** for shortcuts and scripts
+- Does **not** force-close your apps unless you turn on Force mode
 
-1. **Download** the `Windows_Shutdown_Timer_v_0.1.bat` file
-2. **Save** it to your desired location (Desktop, Documents, etc.)
-3. **Run** the batch file by double-clicking it
-4. That's it! No installation needed.
+---
 
-## Usage
+## 🚀 Usage
 
-### Quick Start
+1. Download `ShutdownTimer.bat`.
+2. Double-click it.
+3. Pick an option from the menu.
 
-1. Run the batch file
-2. Select an option from the menu:
-   - **Option 1-4**: Preset timers (30 min, 1h, 2h, 3h)
-   - **Option 5**: Custom time entry
-   - **Option 6**: Cancel any scheduled shutdown
-   - **Option 7**: Exit
+### Command line
 
-3. Confirm your selection
-4. Watch the countdown timer display
-
-### Custom Time Entry
-
-When selecting option 5:
-1. Enter hours (0-23)
-2. Enter minutes (0-59)
-3. Type `B` at any prompt to return to main menu
-4. Confirm your custom timer
-
-### Canceling a Shutdown
-
-**While countdown is showing:**
-- Press `C` to cancel and return to menu
-
-**Without running the script:**
-1. Run the script again
-2. Select option 6 (Cancel Any Scheduled Shutdown)
-3. The scheduled shutdown will be cancelled
-
-## How It Works
-
-1. When you confirm a timer, the script schedules the shutdown directly with Windows using the `shutdown` command
-2. This means the shutdown is now managed by Windows, not just the batch script
-3. The countdown display shows real-time information and exact shutdown time
-4. You can close the window, but the shutdown will still happen as scheduled with Windows
-5. To cancel, use option 6 or press `C` during countdown
-
-## Screenshots
-
-The script displays a clean menu interface with:
-- Centered window on your screen
-- Light red theme for easy visibility
-- Clear status information during countdown
-- Exact shutdown time display
-
-## Menu Structure
-
-```
-[1] Shutdown in 30 Minutes
-[2] Shutdown in 1 Hour
-[3] Shutdown in 2 Hours
-[4] Shutdown in 3 Hours
-[5] Custom Time (Set Hours + Minutes)
-[6] Cancel Any Scheduled Shutdown
-[7] Exit
+```bat
+ShutdownTimer.bat 45                   :: shutdown in 45 minutes
+ShutdownTimer.bat 1h30m restart        :: restart in 1 hour 30 minutes
+ShutdownTimer.bat at 11:30pm sleep     :: sleep at 11:30 PM
+ShutdownTimer.bat status               :: show the active timer
+ShutdownTimer.bat cancel               :: cancel the active timer
+ShutdownTimer.bat help                 :: show usage
+ShutdownTimer.bat version              :: show the version
 ```
 
-## Keyboard Shortcuts
+Actions: `shutdown` `restart` `sleep` `hibernate` `lock` `logoff`
+If you leave the action out, your **default action** from Settings is used (`shutdown` until you change it).
 
-- **1-7**: Navigate menu
-- **Y/N**: Confirm or cancel timer setup
-- **B**: Back to main menu (in custom time entry)
-- **C**: Cancel scheduled shutdown (during countdown)
+---
 
-## Troubleshooting
+## 🧠 How it works
 
-### "Could not schedule the shutdown" Error
+| Action | Scheduled by | Survives closing the window |
+|---|---|---|
+| Shutdown, Restart | Windows itself (`shutdown /t`) | ✅ Yes |
+| Sleep, Hibernate, Lock, Log off | A small hidden PowerShell helper | ✅ Yes (not through log off or reboot) |
 
-**Possible causes:**
-- Your PC is managed by a work/school policy that restricts shutdown rights
-- Lack of permissions in your user account
+To cancel, run the script again and choose **Active timer → Cancel**, press **C** on the countdown screen, or run `ShutdownTimer.bat cancel`.
 
-**Solution:**
-- Try running the script as Administrator
-- Contact your system administrator for policy changes
+---
 
-### Script won't open
+## ⚙️ Settings
 
-- Right-click the `.bat` file and select "Run as Administrator"
-- Check if batch files are blocked by your security software
-- Try disabling antivirus temporarily
+| Setting | Default | Description |
+|---|---|---|
+| Theme | Red | Console colour theme |
+| Force-close apps | OFF | When ON, open apps are closed without asking (`/f`) |
+| Warning popups | ON | Notifications 5 min and 1 min before the action |
+| Default action | Shutdown | Used at start-up and when no action is given on the command line |
+| Ask before starting | ON | Show the confirmation screen before a timer starts |
+| Reset all settings | - | Restores every setting above and clears the saved last custom time |
 
-### Timer doesn't work
+Settings and the active timer are saved in `%APPDATA%\DevFahimShutdownTimer`.
 
-- Ensure Windows updates are current
-- PowerShell must be enabled and available
-- Restart your computer and try again
+---
 
-## System Requirements
+## 📋 Requirements
 
-| Requirement | Details |
-|---|---|
-| **OS** | Windows 7 or later |
-| **Architecture** | 32-bit or 64-bit |
-| **Permissions** | Normal user rights (no admin required for normal operation) |
-| **Dependencies** | PowerShell (pre-installed on Windows) |
+- Windows 10 or 11
+- Windows PowerShell 5.1 (built into Windows)
+- Hibernate must be enabled in Windows to use the Hibernate action (`powercfg /h on` in an admin prompt)
 
-## Important Notes
+---
 
-⚠️ **Once you confirm a timer, the shutdown is scheduled directly with Windows.** It will still happen even if you close this window.
+## ❓ FAQ
 
-🔔 **To cancel a shutdown:**
-- Option 1: Run the script again and select option 6
-- Option 2: Press `C` while the countdown window is open
+**Does it need administrator rights?**
+No. If your PC is managed by a work or school policy that restricts shutdown rights, try running it as administrator.
 
-📌 **Best Practice:** Save all your work before confirming a timer.
+**Windows says an app is preventing shutdown.**
+Force mode is off by default so you do not lose unsaved work. Turn it on in **Settings** if you want apps closed automatically.
 
-## Tested On
+**Why does it create a PowerShell file?**
+The script writes a small helper to `%APPDATA%\DevFahimShutdownTimer` for time calculations and warnings. Security software may notice the hidden PowerShell process. This is expected.
 
-- Windows 7
-- Windows 10
-- Windows 11
+---
 
-## Contributing
+## 📝 Changelog
 
-Have an idea for improvement? Found a bug? 
+**v2.1**
+- Added a version number (shown in the banner and with `ShutdownTimer.bat version`)
+- New settings: default action, ask-before-starting toggle, reset all settings
 
-Feel free to:
-- Open an issue on GitHub
-- Submit a pull request
-- Join our community on Discord
+**v2.0**
+- Six actions, clock-time mode, flexible custom input, extend, warning popups, progress bar, themes, command-line mode
+- Removed forced app closing by default (now opt-in)
+- Real-clock countdown that no longer drifts
 
-## Version History
+---
 
-**v0.1** - Initial release
-- Preset shutdown timers
-- Custom time configuration
-- Live countdown display
-- Cancel functionality
-- Clean UI with centered window
+## 👤 Author
 
-## License
+**Dev-Fahim-Code**
+GitHub: [github.com/dev-fahim-code](https://github.com/dev-fahim-code)
 
-[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
+## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Support
-
-For support, join our community:
-
-[![Discord](https://img.shields.io/badge/Discord-%237289DA.svg?logo=discord&logoColor=white)](https://discord.gg/bb2k3w5Q5A)
-
-## Author
-
-- [@Dev-Fahim-Code](https://github.com/dev-fahim-code)
+Add a `LICENSE` file (MIT is a common choice for scripts) and mention it here.
